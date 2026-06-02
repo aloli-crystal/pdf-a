@@ -1,0 +1,26 @@
+name: pdf-a
+version: 0.1.0
+
+description: |
+  PDF/A archival-profile layer on top of aloli-crystal/pdf.
+  Configures and validates documents for ISO 19005 conformance
+  (PDF/A-2b first, PDF/A-3b next): output intent, XMP pdfaid
+  identification, no encryption, embedded fonts. Part of the ALOLI
+  ISO PDF trajectory (milestone J3).
+
+authors:
+  - Philippe Nénert <philippe@aloli.fr>
+
+crystal: ">= 1.10.0"
+
+license: MIT
+
+dependencies:
+  pdf:
+    github: aloli-crystal/pdf
+    version: "~> 0.7.3"
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: "~> 1.6"

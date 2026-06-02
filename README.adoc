@@ -1,0 +1,68 @@
+= pdf-a
+:toc: macro
+:icons: font
+
+PDF/A archival-profile layer on top of
+https://github.com/aloli-crystal/pdf[`aloli-crystal/pdf`].
+
+`pdf-a` does not re-implement PDF generation. It *configures* a
+`PDF::Document` for an ISO 19005 conformance profile and *validates*
+the document-level preconditions the engine can satisfy. The bytes
+are produced by `pdf`.
+
+It is milestone **J3** of the ALOLI ISO PDF trajectory (see
+`pdf/doc/RATIONALE.adoc`).
+
+toc::[]
+
+== Status
+
+First palier (0.1.0) : document-level conformance.
+
+* Profiles : `PDF/A-2b` (ISO 19005-2) and `PDF/A-3b` (ISO 19005-3).
+* `PDF::A.configure` sets the XMP `pdfaid` identification and a
+  default sRGB output intent.
+* `PDF::A.violations` reports the document-level issues the engine
+  can detect : missing pdfaid, missing output intent, encryption,
+  part mismatch.
+
+NOT yet covered (later paliers / `pdf-validate` in J5) : per-resource
+checks (every font embedded & subsetted, calibrated colour spaces,
+isolated transparency groups, no JavaScript/AA). A clean
+`PDF::A.violations` result therefore means the document passes the
+*document-level* checks — it is not yet a full ISO 19005 certificate.
+
+== Installation
+
+[source,yaml]
+----
+dependencies:
+  pdf-a:
+    github: aloli-crystal/pdf-a
+    version: "~> 0.1.0"
+----
+
+== Usage
+
+[source,crystal]
+----
+require "pdf-a"
+
+pdf = PDF::Document.new
+PDF::A.configure(pdf, PDF::A::Profile::A_2B)
+
+pdf.page do |page|
+  # draw with embedded fonts (avoid the non-embedded standard-14 fonts)
+end
+
+violations = PDF::A.violations(pdf)
+unless violations.empty?
+  raise violations.map(&.to_s).join("\n")
+end
+
+pdf.save("archival.pdf")
+----
+
+== License
+
+MIT. See `LICENSE`.

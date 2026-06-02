@@ -1,0 +1,70 @@
+= pdf-a
+:toc: macro
+:icons: font
+
+Couche de profil d'archivage PDF/A au-dessus de
+https://github.com/aloli-crystal/pdf[`aloli-crystal/pdf`].
+
+`pdf-a` ne réimplémente pas la génération PDF. Il *configure* un
+`PDF::Document` pour un profil de conformité ISO 19005 et *valide*
+les préconditions de niveau document que le moteur peut satisfaire.
+Les octets sont produits par `pdf`.
+
+C'est le jalon **J3** de la trajectoire ISO PDF d'ALOLI (cf.
+`pdf/doc/RATIONALE.adoc`).
+
+toc::[]
+
+== État
+
+Premier palier (0.1.0) : conformité au niveau document.
+
+* Profils : `PDF/A-2b` (ISO 19005-2) et `PDF/A-3b` (ISO 19005-3).
+* `PDF::A.configure` pose l'identification XMP `pdfaid` et un output
+  intent sRGB par défaut.
+* `PDF::A.violations` remonte les problèmes de niveau document que le
+  moteur sait détecter : pdfaid manquant, output intent manquant,
+  chiffrement, incohérence de part.
+
+PAS encore couvert (paliers ultérieurs / `pdf-validate` en J5) : les
+vérifications par ressource (chaque police embarquée et subsettée,
+espaces de couleur calibrés, groupes de transparence isolés, pas de
+JavaScript/AA). Un résultat `PDF::A.violations` vide signifie donc
+que le document passe les vérifications de *niveau document* — ce
+n'est pas encore un certificat ISO 19005 complet.
+
+== Installation
+
+[source,yaml]
+----
+dependencies:
+  pdf-a:
+    github: aloli-crystal/pdf-a
+    version: "~> 0.1.0"
+----
+
+== Utilisation
+
+[source,crystal]
+----
+require "pdf-a"
+
+pdf = PDF::Document.new
+PDF::A.configure(pdf, PDF::A::Profile::A_2B)
+
+pdf.page do |page|
+  # dessiner avec des polices embarquées (éviter les 14 polices
+  # standard non embarquées)
+end
+
+violations = PDF::A.violations(pdf)
+unless violations.empty?
+  raise violations.map(&.to_s).join("\n")
+end
+
+pdf.save("archive.pdf")
+----
+
+== Licence
+
+MIT. Voir `LICENSE`.
