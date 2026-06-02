@@ -7,6 +7,30 @@ All notable changes to pdf-a are documented here. The format follows
 https://keepachangelog.com/1.1.0/[Keep a Changelog] and versioning
 follows https://semver.org/[SemVer].
 
+== v0.2.1 — 2026-06-02 — veraPDF-certified PDF/A-2b output
+
+=== Fixed
+
+* **`PDF::A.configure` now forces a file identifier** (`doc.file_id`)
+  so the writer emits `/ID` in the trailer — required by ISO 19005-2
+  § 6.1.3. Caught by running veraPDF 1.30.1 against the output.
+
+=== Verified
+
+* A document configured with `PDF::A.configure` + an embedded
+  TrueType font + content is now reported **`isCompliant="true"`**
+  by **veraPDF 1.30.1** (PDF/A-2b profile : 144 rules passed, 0
+  failed). This is the real authoritative oracle, not a self-check.
+  Requires pdf ~> 0.7.6 (which fixed the output-intent ICC profile
+  class — the other veraPDF finding).
+* Cross-validation : on a 3-PDF corpus (conformant + two
+  non-conformant), `aloli-crystal/pdf-validate` agrees with veraPDF
+  on every verdict (3/3).
+
+=== Changed
+
+* Dependency bumped to `pdf ~> 0.7.6`.
+
 == v0.2.0 — 2026-06-02 — Resource checks + Pdf::A::Document
 
 === Added

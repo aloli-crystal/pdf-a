@@ -14,6 +14,9 @@ module PDF
       doc.pdfa_part = profile.part
       doc.pdfa_conformance = profile.conformance
       doc.output_intent ||= PDF::OutputIntent.srgb
+      # Force a file identifier so the writer emits /ID in the trailer
+      # — required by PDF/A (ISO 19005-2 § 6.1.3, verified by veraPDF).
+      doc.file_id
       doc
     end
 

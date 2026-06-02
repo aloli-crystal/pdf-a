@@ -23,6 +23,15 @@ describe PDF::A do
       doc.output_intent.should_not be_nil
     end
 
+    it "forces a file identifier so the writer emits /ID (PDF/A requires it)" do
+      doc = PDF::Document.new
+      doc.has_file_id?.should be_false
+      PDF::A.configure(doc)
+      doc.has_file_id?.should be_true
+      out = doc.tap(&.page { |_| }).to_slice.map(&.chr).join
+      out.should contain("/ID")
+    end
+
     it "does not override an output intent already set" do
       doc = PDF::Document.new
       fogra = PDF::OutputIntent.fogra39
