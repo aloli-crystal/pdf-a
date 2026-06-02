@@ -1,0 +1,48 @@
+= Journal des modifications
+:toc: left
+:toc-title: Versions
+:toclevels: 2
+
+Toutes les évolutions notables de pdf-a sont consignées ici. Le
+format suit https://keepachangelog.com/fr/1.1.0/[Keep a Changelog]
+et le versionnage respecte https://semver.org/lang/fr/[SemVer].
+
+== v0.2.0 — 2026-06-02 — Vérifs ressources + Pdf::A::Document
+
+=== Ajouté
+
+* **Vérifications de violations au niveau ressource** dans
+  `PDF::A.violations` :
+** `:non_embedded_font` — signale l'usage des polices Type1
+   standard-14 (Helvetica, Times-Roman, Courier…), interdites en
+   PDF/A car non embarquées. (ISO 19005-2 § 6.3.4) Nécessite
+   pdf 0.7.4.
+** `:embedded_files_forbidden` — les fichiers embarqués sont
+   interdits en PDF/A-2b mais autorisés en PDF/A-3b. (ISO 19005-2
+   § 6.8)
+* **`PDF::A::Document`** — un `PDF::Document` pré-configuré pour un
+  profil qui se valide lui-même au `write`/`save` :
+** lance `configure` à la construction (pdfaid + output intent sRGB),
+** en mode *strict* par défaut, lève `PDF::A::ConformanceError` en
+   listant chaque violation restante avant qu'un seul octet
+   n'atteigne le disque,
+** `strict: false` collecte les violations sans lever.
+
+=== Modifié
+
+* Contrainte passée à `pdf ~> 0.7.4` (pour
+  `Document#standard_type1_font_names`).
+
+== v0.1.0 — 2026-06-02 — Bootstrap (J3, palier 1)
+
+=== Ajouté
+
+* Couche initiale de profil d'archivage PDF/A au-dessus de
+  `aloli-crystal/pdf`.
+* `PDF::A::Profile` (`A_2B`, `A_3B`) avec part/conformance/label.
+* `PDF::A.configure(doc, profile)` — pose l'identification XMP pdfaid
+  et un output intent sRGB par défaut.
+* `PDF::A.violations(doc, profile)` — vérifications niveau document :
+  pdfaid manquant, output intent manquant, chiffrement interdit,
+  incohérence de part — chacune tracée à sa clause ISO 19005.
+* `PDF::A.conformant?(doc, profile)`.

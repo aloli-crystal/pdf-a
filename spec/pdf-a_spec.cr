@@ -61,6 +61,74 @@ describe PDF::A do
       codes = PDF::A.violations(doc, PDF::A::Profile::A_2B).map(&.code)
       codes.should contain(:wrong_pdfaid_part)
     end
+
+    it "flags non-embedded standard-14 fonts" do
+      doc = PDF::Document.new
+      PDF::A.configure(doc)
+      doc.page { |p| p.font "Helvetica", size: 12; p.text "x", at: {72, 700} }
+      codes = PDF::A.violations(doc).map(&.code)
+      codes.should contain(:non_embedded_font)
+    end
+
+    it "forbids embedded files in A-2b but allows them in A-3b" do
+      doc = PDF::Document.new
+      PDF::A.configure(doc, PDF::A::Profile::A_3B)
+      doc.attach_file(
+        name: "data.xml",
+        bytes: "<x/>".to_slice,
+        mime_type: "application/xml",
+      )
+
+      # As A-2b → forbidden.
+      PDF::A.violations(doc, PDF::A::Profile::A_2B).map(&.code)
+        .should contain(:embedded_files_forbidden)
+      # As A-3b → allowed (the embedded-file rule does not fire).
+      PDF::A.violations(doc, PDF::A::Profile::A_3B).map(&.code)
+        .should_not contain(:embedded_files_forbidden)
+    end
+  end
+
+  describe "PDF::A::Document" do
+    it "auto-configures pdfaid + output intent on construction" do
+      doc = PDF::A::Document.new(PDF::A::Profile::A_2B)
+      doc.pdfa_part.should eq(2)
+      doc.output_intent.should_not be_nil
+      doc.profile.should eq(PDF::A::Profile::A_2B)
+    end
+
+    it "raises ConformanceError on save when a violation remains (strict)" do
+      doc = PDF::A::Document.new
+      # Use a non-embedded standard font → violation at write time.
+      doc.page { |p| p.font "Helvetica", size: 12; p.text "x", at: {72, 700} }
+      expect_raises(PDF::A::ConformanceError, /non-embedded|Helvetica|6\.3\.4/i) do
+        doc.to_slice
+      end
+    end
+
+    it "does not raise in non-strict mode" do
+      doc = PDF::A::Document.new(PDF::A::Profile::A_2B, strict: false)
+      doc.page { |p| p.font "Helvetica", size: 12; p.text "x", at: {72, 700} }
+      bytes = doc.to_slice
+      bytes.size.should be > 0
+    end
+
+    it "writes successfully when conformant (embedded font, no violations)" do
+      doc = PDF::A::Document.new
+      font = doc.load_font("#{__DIR__}/fixtures/DejaVuSans.ttf") if File.exists?("#{__DIR__}/fixtures/DejaVuSans.ttf")
+      if font
+        doc.page do |p|
+          p.font font, size: 12
+          p.text "Archive", at: {72, 700}
+        end
+        out = doc.to_slice.map(&.chr).join
+        out.should contain("<pdfaid:part>2</pdfaid:part>")
+      else
+        # No embedded font fixture available → at least confirm an
+        # empty (font-free) page conforms.
+        doc.page { |_| }
+        doc.to_slice.size.should be > 0
+      end
+    end
   end
 
   describe "end to end" do

@@ -60,6 +60,33 @@ module PDF
         )
       end
 
+      # --- Fonts must be embedded (ISO 19005-2 § 6.3.4-6.3.5) ---
+      # The standard-14 Type1 fonts (Helvetica, Times-Roman, Courier…)
+      # are never embedded — the viewer substitutes a system font.
+      # PDF/A requires every font to be embedded, so any use of them
+      # is a violation.
+      non_embedded = doc.standard_type1_font_names
+      unless non_embedded.empty?
+        list << Violation.new(
+          :non_embedded_font,
+          "Non-embedded standard-14 font(s) used: #{non_embedded.join(", ")}. " \
+          "PDF/A requires every font to be embedded — use TrueType/OpenType " \
+          "fonts loaded via load_font instead.",
+          "ISO 19005-2 § 6.3.4",
+        )
+      end
+
+      # --- Embedded files : forbidden in PDF/A-2, allowed in -3 ---
+      if profile == Profile::A_2B && doc.attached_files?
+        list << Violation.new(
+          :embedded_files_forbidden,
+          "Embedded files are forbidden in PDF/A-2b. Use PDF/A-3b " \
+          "(PDF::A::Profile::A_3B) for documents with attachments " \
+          "(e.g. Factur-X).",
+          "ISO 19005-2 § 6.8",
+        )
+      end
+
       list
     end
 
