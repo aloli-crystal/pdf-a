@@ -7,6 +7,29 @@ Toutes les évolutions notables de pdf-a sont consignées ici. Le
 format suit https://keepachangelog.com/fr/1.1.0/[Keep a Changelog]
 et le versionnage respecte https://semver.org/lang/fr/[SemVer].
 
+== v0.3.0 — 2026-06-04 — Suit le moteur pdf 1.x moderne (pdf ~> 1.4)
+
+=== Modifié
+
+* **Bump de dépendance : `pdf` `~> 0.7.6` → `~> 1.4`.** Adopte la
+  ligne moderne du moteur pdf. Aucun changement de l'API propre à
+  pdf-a ; `PDF::A::Document` et `PDF::A.configure` se comportent comme
+  avant.
+
+=== Notes
+
+* Récupère le correctif pdf 1.3.0 faisant émettre aux colorants spot
+  `DeviceN` le dictionnaire d'attributs `/Colorants` exigé par ISO
+  19005-2 § 6.2.4.4, et l'API publique pdf 1.4.0 qui rend les espaces
+  spot `Separation` / `DeviceN` utilisables sur une page
+  (`Page#fill_color`, `Page#color_space`). Un document PDF/A-2b
+  construit via pdf-a peut désormais remplir/tracer avec des couleurs
+  spot ou multi-encres conformes.
+
+=== Vérifié
+
+* `crystal spec` au vert (16 exemples) contre pdf 1.4.0.
+
 == v0.2.1 — 2026-06-02 — Sortie PDF/A-2b certifiée veraPDF
 
 === Corrigé

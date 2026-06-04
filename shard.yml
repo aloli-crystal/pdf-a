@@ -1,5 +1,5 @@
 name: pdf-a
-version: 0.2.1
+version: 0.3.0
 
 description: |
   PDF/A archival-profile layer on top of aloli-crystal/pdf.
@@ -18,7 +18,7 @@ license: MIT
 dependencies:
   pdf:
     github: aloli-crystal/pdf
-    version: "~> 0.7.6"
+    version: "~> 1.4"
 
 development_dependencies:
   ameba:
